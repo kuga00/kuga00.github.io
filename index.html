@@ -62,7 +62,7 @@
                     if( data[0].summary.cover == "" ){
                         $("#thumbnail").html('<img src=\"\" />');
                     } else {
-                        $("#thumbnail").html('<img src=\"' + data[0].summary.cover + '\" style=\"border:solid 1px #000000\" />');
+                        $("#thumbnail").html('<img src=\"' + data[0].summary.cover + '\" width=\"50%\" height=\"50%\" style=\"border:solid 1px #000000\" />');
                     }
                     $("#title").val(data[0].summary.title);
                     $("#publisher").val(data[0].summary.publisher);
