@@ -17,44 +17,81 @@
     </div>
 
     <div>
-        <p id="thumbnail"></p>
-    </div>
-
-    <div>
         書籍名：<input id="title" type="text" name="title" value="">
     </div>
 
     <div>
-        出版社：<input id="publisher" type="text" name="publisher" value="" >
+        <p id="thumbnail"></p>
     </div>
 
     <div>
-        巻：<input id="volume" type="text" name="volume" value="" >
+        ISBN13：<input id="isbn2" type="text" name="isbn2" value="" autofocus>
     </div>
 
     <div>
-        シリーズ：<input id="series" type="text" name="series" value="" >
+        書籍名：<input id="title2" type="text" name="title2" value="">
     </div>
 
     <div>
-        著者：<input id="author" type="text" name="author" value="" >
+        <p id="thumbnail2"></p>
     </div>
 
     <div>
-        出版日：<input id="pubdate" type="text"  name="pubdate" value="" >
+        ISBN13：<input id="isbn3" type="text" name="isbn3" value="" autofocus>
     </div>
 
     <div>
-        サムネイルURI：<input id="cover" type="text" name="cover" value="" >
+        書籍名：<input id="title3" type="text" name="title3" value="">
     </div>
 
     <div>
-        詳細：<textarea id="description" type="text" name="description" value="" ></textarea>
+        <p id="thumbnail3"></p>
+    </div>
+
+    <div>
+        ISBN13：<input id="isbn4" type="text" name="isbn4" value="" autofocus>
+    </div>
+
+    <div>
+        書籍名：<input id="title4" type="text" name="title4" value="">
+    </div>
+
+    <div>
+        <p id="thumbnail4"></p>
+    </div>
+
+    <div>
+        ISBN13：<input id="isbn5" type="text" name="isbn5" value="" autofocus>
+    </div>
+
+    <div>
+        書籍名：<input id="title5" type="text" name="title5" value="">
+    </div>
+
+    <div>
+        <p id="thumbnail5"></p>
+    </div>
+
+    <div>
+        ISBN13：<input id="isbn6" type="text" name="isbn6" value="" autofocus>
+    </div>
+
+    <div>
+        書籍名：<input id="title6" type="text" name="title6" value="">
+    </div>
+
+    <div>
+        <p id="thumbnail6"></p>
     </div>
 
     <script>
         $(function() {
-            $("#isbn").val('4-7981-1066-3');
+            $("#isbn").val('978-4-320-12354-0');
+            $("#isbn2").val('978-4-8026-1248-7');
+            $("#isbn3").val('978-4-297-11450-3');
+            $("#isbn4").val('978-4-87311-917-5');
+            $("#isbn5").val('978-4-297-10380-4');
+            $("#isbn6").val('4-7981-1066-3');
             $.getJSON( ("https://api.openbd.jp/v1/get?isbn=" + $("#isbn").val()), function( data ) {
                 if( data[0] == null ) {
                     alert("データが見つかりません");
@@ -65,13 +102,66 @@
                         $("#thumbnail").html('<img src=\"' + data[0].summary.cover + '\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
                     }
                     $("#title").val(data[0].summary.title);
-                    $("#publisher").val(data[0].summary.publisher);
-                    $("#volume").val(data[0].summary.volume);
-                    $("#series").val(data[0].summary.series);
-                    $("#author").val(data[0].summary.author);
-                    $("#pubdate").val(data[0].summary.pubdate);
-                    $("#cover").val(data[0].summary.cover);
-                    $("#description").val(data[0].onix.CollateralDetail.TextContent[0].Text);
+                }
+            });
+            $.getJSON( ("https://api.openbd.jp/v1/get?isbn=" + $("#isbn2").val()), function( data ) {
+                if( data[0] == null ) {
+                    alert("データが見つかりません");
+                } else {
+                    if( data[0].summary.cover == "" ){
+                        $("#thumbnail2").html('<img src=\"\" />');
+                    } else {
+                        $("#thumbnail2").html('<img src=\"' + data[0].summary.cover + '\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
+                    }
+                    $("#title2").val(data[0].summary.title);
+                }
+            });
+            $.getJSON( ("https://api.openbd.jp/v1/get?isbn=" + $("#isbn3").val()), function( data ) {
+                if( data[0] == null ) {
+                    alert("データが見つかりません");
+                } else {
+                    if( data[0].summary.cover == "" ){
+                        $("#thumbnail3").html('<img src=\"\" />');
+                    } else {
+                        $("#thumbnail3").html('<img src=\"' + data[0].summary.cover + '\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
+                    }
+                    $("#title3").val(data[0].summary.title);
+                }
+            });
+            $.getJSON( ("https://api.openbd.jp/v1/get?isbn=" + $("#isbn4").val()), function( data ) {
+                if( data[0] == null ) {
+                    alert("データが見つかりません");
+                } else {
+                    if( data[0].summary.cover == "" ){
+                        $("#thumbnail4").html('<img src=\"\" />');
+                    } else {
+                        $("#thumbnail4").html('<img src=\"' + data[0].summary.cover + '\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
+                    }
+                    $("#title4").val(data[0].summary.title);
+                }
+            });
+            $.getJSON( ("https://api.openbd.jp/v1/get?isbn=" + $("#isbn5").val()), function( data ) {
+                if( data[0] == null ) {
+                    alert("データが見つかりません");
+                } else {
+                    if( data[0].summary.cover == "" ){
+                        $("#thumbnail5").html('<img src=\"\" />');
+                    } else {
+                        $("#thumbnail5").html('<img src=\"' + data[0].summary.cover + '\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
+                    }
+                    $("#title5").val(data[0].summary.title);
+                }
+            });
+            $.getJSON( ("https://api.openbd.jp/v1/get?isbn=" + $("#isbn6").val()), function( data ) {
+                if( data[0] == null ) {
+                    alert("データが見つかりません");
+                } else {
+                    if( data[0].summary.cover == "" ){
+                        $("#thumbnail6").html('<img src=\"\" />');
+                    } else {
+                        $("#thumbnail6").html('<img src=\"' + data[0].summary.cover + '\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
+                    }
+                    $("#title6").val(data[0].summary.title);
                 }
             });
             $('#getBookInfo').click( function( e ) {
