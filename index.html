@@ -8,6 +8,7 @@
 
     <!-- Scripts -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="books.js"></script>
 </head>
 <body>
 
@@ -86,12 +87,12 @@
 
     <script>
         $(function() {
-            $("#isbn").val('978-4-320-12354-0');
-            $("#isbn2").val('978-4-8026-1248-7');
-            $("#isbn3").val('978-4-297-11450-3');
-            $("#isbn4").val('978-4-87311-917-5');
-            $("#isbn5").val('978-4-297-10380-4');
-            $("#isbn6").val('4-7981-1066-3');
+            $("#isbn").val(isbn_1);
+            $("#isbn2").val(isbn_2);
+            $("#isbn3").val(isbn_3);
+            $("#isbn4").val(isbn_4);
+            $("#isbn5").val(isbn_5);
+            $("#isbn6").val(isbn_6);
             $.getJSON( ("https://api.openbd.jp/v1/get?isbn=" + $("#isbn").val()), function( data ) {
                 if( data[0] == null ) {
                     alert("データが見つかりません");
