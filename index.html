@@ -87,12 +87,20 @@
 
     <script>
         $(function() {
-            $("#isbn").val(isbn_1);
-            $("#isbn2").val(isbn_2);
-            $("#isbn3").val(isbn_3);
-            $("#isbn4").val(isbn_4);
-            $("#isbn5").val(isbn_5);
-            $("#isbn6").val(isbn_6);
+            $.ajaxSetup({async: false});
+            $.getJSON( ("https://test-flask-00.herokuapp.com/"), function( data ) {
+                if( data[0] == null ) {
+                    alert("データが見つかりません");
+                } else {
+                    $("#isbn").val(data[0].isbn_1);
+                    $("#isbn2").val(data[0].isbn_2);
+                    $("#isbn3").val(data[0].isbn_3);
+                    $("#isbn4").val(data[0].isbn_4);
+                    $("#isbn5").val(data[0].isbn_5);
+                    $("#isbn6").val(data[0].isbn_6);
+                }
+            });
+            $.ajaxSetup({async: true});
             $.getJSON( ("https://api.openbd.jp/v1/get?isbn=" + $("#isbn").val()), function( data ) {
                 if( data[0] == null ) {
                     alert("データが見つかりません");
