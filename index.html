@@ -131,6 +131,10 @@
         <p id="thumbnail10"></p>
     </div>
 
+    <div>
+        <p id="sincelastupdate"></p>
+    </div>
+
     <script>
         $(function() {
             $.ajaxSetup({async: false});
@@ -148,6 +152,7 @@
                     $("#isbn8").val(data[0].isbn_8);
                     $("#isbn9").val(data[0].isbn_9);
                     $("#isbn10").val(data[0].isbn_10);
+                    $("#sincelastupdate").text(data[0].since_last_update);
                 }
             });
             $.ajaxSetup({async: true});
