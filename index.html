@@ -3,279 +3,165 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>読んでいる本</title>
 
-    <!-- Scripts -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Meiryo", sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            padding: 16px;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            margin-bottom: 4px;
+        }
+
+        #sincelastupdate {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 16px;
+        }
+
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 400px) {
+            .book-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .book-card {
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .book-card.loaded {
+            display: block;
+        }
+
+        .book-card img {
+            width: 100%;
+            aspect-ratio: 100 / 142;
+            object-fit: cover;
+            display: block;
+            border-bottom: 1px solid #eee;
+        }
+
+        .book-title {
+            font-size: 0.75rem;
+            padding: 6px 8px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* ISBNは非表示（JS処理用） */
+        .isbn-hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
 
-    <div>
-        ISBN13：<input id="isbn" type="text" name="isbn" value="" readonly>
-    </div>
+    <h1>読んでいる本</h1>
+    <p id="sincelastupdate"></p>
 
-    <div>
-        <p id="title">書籍名：</p>
-    </div>
+    <div class="book-grid" id="book-grid"></div>
 
-    <div>
-        <p id="thumbnail"></p>
-    </div>
-
-    <div>
-        ISBN13：<input id="isbn2" type="text" name="isbn2" value="" readonly>
-    </div>
-
-    <div>
-        <p id="title2">書籍名：</p>
-    </div>
-
-    <div>
-        <p id="thumbnail2"></p>
-    </div>
-
-    <div>
-        ISBN13：<input id="isbn3" type="text" name="isbn3" value="" readonly>
-    </div>
-
-    <div>
-        <p id="title3">書籍名：</p>
-    </div>
-
-    <div>
-        <p id="thumbnail3"></p>
-    </div>
-
-    <div>
-        ISBN13：<input id="isbn4" type="text" name="isbn4" value="" readonly>
-    </div>
-
-    <div>
-        <p id="title4">書籍名：</p>
-    </div>
-
-    <div>
-        <p id="thumbnail4"></p>
-    </div>
-
-    <div>
-        ISBN13：<input id="isbn5" type="text" name="isbn5" value="" readonly>
-    </div>
-
-    <div>
-        <p id="title5">書籍名：</p>
-    </div>
-
-    <div>
-        <p id="thumbnail5"></p>
-    </div>
-
-    <div>
-        ISBN13：<input id="isbn6" type="text" name="isbn6" value="" readonly>
-    </div>
-
-    <div>
-        <p id="title6">書籍名：</p>
-    </div>
-
-    <div>
-        <p id="thumbnail6"></p>
-    </div>
-
-    <div>
-        ISBN13：<input id="isbn7" type="text" name="isbn7" value="" readonly>
-    </div>
-
-    <div>
-        <p id="title7">書籍名：</p>
-    </div>
-
-    <div>
-        <p id="thumbnail7"></p>
-    </div>
-
-    <div>
-        ISBN13：<input id="isbn8" type="text" name="isbn8" value="" readonly>
-    </div>
-
-    <div>
-        <p id="title8">書籍名：</p>
-    </div>
-
-    <div>
-        <p id="thumbnail8"></p>
-    </div>
-
-    <div>
-        ISBN13：<input id="isbn9" type="text" name="isbn9" value="" readonly>
-    </div>
-
-    <div>
-        <p id="title9">書籍名：</p>
-    </div>
-
-    <div>
-        <p id="thumbnail9"></p>
-    </div>
-
-    <div>
-        ISBN13：<input id="isbn10" type="text" name="isbn10" value="" readonly>
-    </div>
-
-    <div>
-        <p id="title10">書籍名：</p>
-    </div>
-
-    <div>
-        <p id="thumbnail10"></p>
-    </div>
-
-    <div>
-        <p id="sincelastupdate"></p>
+    <!-- ISBN格納用（非表示） -->
+    <div class="isbn-hidden">
+        <input id="isbn"   type="text" readonly>
+        <input id="isbn2"  type="text" readonly>
+        <input id="isbn3"  type="text" readonly>
+        <input id="isbn4"  type="text" readonly>
+        <input id="isbn5"  type="text" readonly>
+        <input id="isbn6"  type="text" readonly>
+        <input id="isbn7"  type="text" readonly>
+        <input id="isbn8"  type="text" readonly>
+        <input id="isbn9"  type="text" readonly>
+        <input id="isbn10" type="text" readonly>
     </div>
 
     <script>
+        var NO_IMAGE = "no_image.jpg";
+
+        function createCard(index) {
+            var card = $('<div class="book-card" id="card' + index + '"></div>');
+            card.append('<img id="img' + index + '" src="" alt="">');
+            card.append('<p class="book-title" id="title' + index + '"></p>');
+            $("#book-grid").append(card);
+        }
+
+        function loadBook(isbn, index) {
+            if (!isbn) return;
+            $.getJSON("https://api.openbd.jp/v1/get?isbn=" + isbn, function(data) {
+                if (!data || data[0] == null) return;
+                var cover = data[0].summary.cover || NO_IMAGE;
+                var title = data[0].summary.title || "（タイトル不明）";
+                $("#img" + index).attr("src", cover).attr("alt", title);
+                $("#title" + index).text(title);
+                $("#card" + index).addClass("loaded");
+            });
+        }
+
         $(function() {
+            // カードの枠を先に生成
+            for (var i = 1; i <= 10; i++) createCard(i);
+
+            // ISBNデータ取得
             $.ajaxSetup({async: false});
-            $.getJSON( ("https://my-app.kuga00.workers.dev/"), function( data ) {
-                if( data[0] == null ) {
+            $.getJSON("https://my-app.kuga00.workers.dev/", function(data) {
+                if (!data || data[0] == null) {
                     alert("データが見つかりません");
-                } else {
-                    $("#isbn").val(data[0].isbn_1);
-                    $("#isbn2").val(data[0].isbn_2);
-                    $("#isbn3").val(data[0].isbn_3);
-                    $("#isbn4").val(data[0].isbn_4);
-                    $("#isbn5").val(data[0].isbn_5);
-                    $("#isbn6").val(data[0].isbn_6);
-                    $("#isbn7").val(data[0].isbn_7);
-                    $("#isbn8").val(data[0].isbn_8);
-                    $("#isbn9").val(data[0].isbn_9);
-                    $("#isbn10").val(data[0].isbn_10);
-                    $("#sincelastupdate").text(data[0].since_last_update);
+                    return;
                 }
+                var d = data[0];
+                $("#isbn").val(d.isbn_1);
+                $("#isbn2").val(d.isbn_2);
+                $("#isbn3").val(d.isbn_3);
+                $("#isbn4").val(d.isbn_4);
+                $("#isbn5").val(d.isbn_5);
+                $("#isbn6").val(d.isbn_6);
+                $("#isbn7").val(d.isbn_7);
+                $("#isbn8").val(d.isbn_8);
+                $("#isbn9").val(d.isbn_9);
+                $("#isbn10").val(d.isbn_10);
+                $("#sincelastupdate").text(d.since_last_update);
             });
             $.ajaxSetup({async: true});
-            $.getJSON( ("https://api.openbd.jp/v1/get?isbn=" + $("#isbn").val()), function( data ) {
-                if( data[0] == null ) {
-                    //alert("データが見つかりません");
-                } else {
-                    if( data[0].summary.cover == "" ){
-                        $("#thumbnail").html('<img src=\"no_image.jpg\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    } else {
-                        $("#thumbnail").html('<img src=\"' + data[0].summary.cover + '\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    }
-                    $("#title").text("書籍名：" + data[0].summary.title);
-                }
-            });
-            $.getJSON( ("https://api.openbd.jp/v1/get?isbn=" + $("#isbn2").val()), function( data ) {
-                if( data[0] == null ) {
-                    //alert("データが見つかりません");
-                } else {
-                    if( data[0].summary.cover == "" ){
-                        $("#thumbnail2").html('<img src=\"no_image.jpg\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    } else {
-                        $("#thumbnail2").html('<img src=\"' + data[0].summary.cover + '\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    }
-                    $("#title2").text("書籍名：" + data[0].summary.title);
-                }
-            });
-            $.getJSON( ("https://api.openbd.jp/v1/get?isbn=" + $("#isbn3").val()), function( data ) {
-                if( data[0] == null ) {
-                    //alert("データが見つかりません");
-                } else {
-                    if( data[0].summary.cover == "" ){
-                        $("#thumbnail3").html('<img src=\"no_image.jpg\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    } else {
-                        $("#thumbnail3").html('<img src=\"' + data[0].summary.cover + '\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    }
-                    $("#title3").text("書籍名：" + data[0].summary.title);
-                }
-            });
-            $.getJSON( ("https://api.openbd.jp/v1/get?isbn=" + $("#isbn4").val()), function( data ) {
-                if( data[0] == null ) {
-                    //alert("データが見つかりません");
-                } else {
-                    if( data[0].summary.cover == "" ){
-                        $("#thumbnail4").html('<img src=\"no_image.jpg\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    } else {
-                        $("#thumbnail4").html('<img src=\"' + data[0].summary.cover + '\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    }
-                    $("#title4").text("書籍名：" + data[0].summary.title);
-                }
-            });
-            $.getJSON( ("https://api.openbd.jp/v1/get?isbn=" + $("#isbn5").val()), function( data ) {
-                if( data[0] == null ) {
-                    //alert("データが見つかりません");
-                } else {
-                    if( data[0].summary.cover == "" ){
-                        $("#thumbnail5").html('<img src=\"no_image.jpg\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    } else {
-                        $("#thumbnail5").html('<img src=\"' + data[0].summary.cover + '\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    }
-                    $("#title5").text("書籍名：" + data[0].summary.title);
-                }
-            });
-            $.getJSON( ("https://api.openbd.jp/v1/get?isbn=" + $("#isbn6").val()), function( data ) {
-                if( data[0] == null ) {
-                    //alert("データが見つかりません");
-                } else {
-                    if( data[0].summary.cover == "" ){
-                        $("#thumbnail6").html('<img src=\"no_image.jpg\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    } else {
-                        $("#thumbnail6").html('<img src=\"' + data[0].summary.cover + '\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    }
-                    $("#title6").text("書籍名：" + data[0].summary.title);
-                }
-            });
-            $.getJSON( ("https://api.openbd.jp/v1/get?isbn=" + $("#isbn7").val()), function( data ) {
-                if( data[0] == null ) {
-                    //alert("データが見つかりません");
-                } else {
-                    if( data[0].summary.cover == "" ){
-                        $("#thumbnail7").html('<img src=\"no_image.jpg\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    } else {
-                        $("#thumbnail7").html('<img src=\"' + data[0].summary.cover + '\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    }
-                    $("#title7").text("書籍名：" + data[0].summary.title);
-                }
-            });
-            $.getJSON( ("https://api.openbd.jp/v1/get?isbn=" + $("#isbn8").val()), function( data ) {
-                if( data[0] == null ) {
-                    //alert("データが見つかりません");
-                } else {
-                    if( data[0].summary.cover == "" ){
-                        $("#thumbnail8").html('<img src=\"no_image.jpg\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    } else {
-                        $("#thumbnail8").html('<img src=\"' + data[0].summary.cover + '\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    }
-                    $("#title8").text("書籍名：" + data[0].summary.title);
-                }
-            });
-            $.getJSON( ("https://api.openbd.jp/v1/get?isbn=" + $("#isbn9").val()), function( data ) {
-                if( data[0] == null ) {
-                    //alert("データが見つかりません");
-                } else {
-                    if( data[0].summary.cover == "" ){
-                        $("#thumbnail9").html('<img src=\"no_image.jpg\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    } else {
-                        $("#thumbnail9").html('<img src=\"' + data[0].summary.cover + '\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    }
-                    $("#title9").text("書籍名：" + data[0].summary.title);
-                }
-            });
-            $.getJSON( ("https://api.openbd.jp/v1/get?isbn=" + $("#isbn10").val()), function( data ) {
-                if( data[0] == null ) {
-                    //alert("データが見つかりません");
-                } else {
-                    if( data[0].summary.cover == "" ){
-                        $("#thumbnail10").html('<img src=\"no_image.jpg\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    } else {
-                        $("#thumbnail10").html('<img src=\"' + data[0].summary.cover + '\" width=\"100\" height=\"142\" style=\"border:solid 1px #000000\" />');
-                    }
-                    $("#title10").text("書籍名：" + data[0].summary.title);
-                }
-            });
+
+            // 書籍情報を並列取得
+            loadBook($("#isbn").val(),    1);
+            loadBook($("#isbn2").val(),   2);
+            loadBook($("#isbn3").val(),   3);
+            loadBook($("#isbn4").val(),   4);
+            loadBook($("#isbn5").val(),   5);
+            loadBook($("#isbn6").val(),   6);
+            loadBook($("#isbn7").val(),   7);
+            loadBook($("#isbn8").val(),   8);
+            loadBook($("#isbn9").val(),   9);
+            loadBook($("#isbn10").val(), 10);
         });
     </script>
 
