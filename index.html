@@ -97,33 +97,60 @@
 
         function loadBook(isbn, index) {
             if (!isbn) return;
-            $.getJSON("https://api.openbd.jp/v1/get?isbn=" + isbn, function(data) {
-                if (!data || data[0] == null) return;
-                var cover = data[0].summary.cover || NO_IMAGE;
-                var title = data[0].summary.title || "（タイトル不明）";
-                $("#img" + index).attr("src", cover).attr("alt", title);
-                $("#title" + index).text(title);
-                $("#card" + index).addClass("loaded");
-            });
+            console.log("[loadBook] isbn=" + isbn + " index=" + index);
+            $.getJSON("https://api.openbd.jp/v1/get?isbn=" + isbn)
+                .done(function(data) {
+                    console.log("[openbd] isbn=" + isbn, data);
+                    if (!data || data[0] == null) {
+                        console.warn("[openbd] isbn=" + isbn + " not found, using no_image");
+                        $("#img" + index).attr("src", NO_IMAGE).attr("alt", "（書影なし）");
+                        $("#title" + index).text("（タイトル不明）");
+                        $("#card" + index).addClass("loaded");
+                        return;
+                    }
+                    var summary = data[0].summary || {};
+                    var cover = summary.cover || NO_IMAGE;
+                    var title = summary.title || "（タイトル不明）";
+                    console.log("[openbd] cover=" + cover + " title=" + title);
+                    $("#img" + index).attr("src", cover).attr("alt", title);
+                    $("#title" + index).text(title);
+                    $("#card" + index).addClass("loaded");
+                })
+                .fail(function(jqXHR, textStatus, errorThrown) {
+                    console.error("[openbd] FAILED isbn=" + isbn, textStatus, errorThrown);
+                    $("#img" + index).attr("src", NO_IMAGE).attr("alt", "（書影なし）");
+                    $("#title" + index).text("（取得失敗）");
+                    $("#card" + index).addClass("loaded");
+                });
         }
 
         $(function() {
-            $.getJSON("https://my-app.kuga00.workers.dev/", function(data) {
-                if (!data || data[0] == null) {
-                    alert("データが見つかりません");
-                    return;
-                }
-                var d = data[0];
-                $("#sincelastupdate").text(d.since_last_update);
-
-                for (var i = 1; i <= 10; i++) {
-                    var isbn = d["isbn_" + i];
-                    if (isbn) {
-                        createCard(i);
-                        loadBook(isbn, i);
+            console.log("[workers] fetching book list...");
+            $.getJSON("https://my-app.kuga00.workers.dev/")
+                .done(function(data) {
+                    console.log("[workers] response:", data);
+                    if (!data || data[0] == null) {
+                        console.error("[workers] data is empty");
+                        alert("データが見つかりません");
+                        return;
                     }
-                }
-            });
+                    var d = data[0];
+                    console.log("[workers] record:", d);
+                    $("#sincelastupdate").text(d.since_last_update);
+
+                    for (var i = 1; i <= 10; i++) {
+                        var isbn = d["isbn_" + i];
+                        console.log("[workers] isbn_" + i + " = " + isbn);
+                        if (isbn) {
+                            createCard(i);
+                            loadBook(isbn, i);
+                        }
+                    }
+                })
+                .fail(function(jqXHR, textStatus, errorThrown) {
+                    console.error("[workers] FAILED", textStatus, errorThrown, jqXHR.status, jqXHR.responseText);
+                    alert("APIの取得に失敗しました: " + textStatus + " (HTTP " + jqXHR.status + ")");
+                });
         });
     </script>
 
