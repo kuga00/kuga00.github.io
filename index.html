@@ -76,10 +76,6 @@
             overflow: hidden;
         }
 
-        /* ISBNは非表示（JS処理用） */
-        .isbn-hidden {
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -88,20 +84,6 @@
     <p id="sincelastupdate"></p>
 
     <div class="book-grid" id="book-grid"></div>
-
-    <!-- ISBN格納用（非表示） -->
-    <div class="isbn-hidden">
-        <input id="isbn"   type="text" readonly>
-        <input id="isbn2"  type="text" readonly>
-        <input id="isbn3"  type="text" readonly>
-        <input id="isbn4"  type="text" readonly>
-        <input id="isbn5"  type="text" readonly>
-        <input id="isbn6"  type="text" readonly>
-        <input id="isbn7"  type="text" readonly>
-        <input id="isbn8"  type="text" readonly>
-        <input id="isbn9"  type="text" readonly>
-        <input id="isbn10" type="text" readonly>
-    </div>
 
     <script>
         var NO_IMAGE = "no_image.jpg";
@@ -126,42 +108,22 @@
         }
 
         $(function() {
-            // カードの枠を先に生成
-            for (var i = 1; i <= 10; i++) createCard(i);
-
-            // ISBNデータ取得
-            $.ajaxSetup({async: false});
             $.getJSON("https://my-app.kuga00.workers.dev/", function(data) {
                 if (!data || data[0] == null) {
                     alert("データが見つかりません");
                     return;
                 }
                 var d = data[0];
-                $("#isbn").val(d.isbn_1);
-                $("#isbn2").val(d.isbn_2);
-                $("#isbn3").val(d.isbn_3);
-                $("#isbn4").val(d.isbn_4);
-                $("#isbn5").val(d.isbn_5);
-                $("#isbn6").val(d.isbn_6);
-                $("#isbn7").val(d.isbn_7);
-                $("#isbn8").val(d.isbn_8);
-                $("#isbn9").val(d.isbn_9);
-                $("#isbn10").val(d.isbn_10);
                 $("#sincelastupdate").text(d.since_last_update);
-            });
-            $.ajaxSetup({async: true});
 
-            // 書籍情報を並列取得
-            loadBook($("#isbn").val(),    1);
-            loadBook($("#isbn2").val(),   2);
-            loadBook($("#isbn3").val(),   3);
-            loadBook($("#isbn4").val(),   4);
-            loadBook($("#isbn5").val(),   5);
-            loadBook($("#isbn6").val(),   6);
-            loadBook($("#isbn7").val(),   7);
-            loadBook($("#isbn8").val(),   8);
-            loadBook($("#isbn9").val(),   9);
-            loadBook($("#isbn10").val(), 10);
+                for (var i = 1; i <= 10; i++) {
+                    var isbn = d["isbn_" + i];
+                    if (isbn) {
+                        createCard(i);
+                        loadBook(isbn, i);
+                    }
+                }
+            });
         });
     </script>
 
