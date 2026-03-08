@@ -23,6 +23,11 @@
             padding: 16px;
         }
 
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
         h1 {
             font-size: 1.4rem;
             margin-bottom: 4px;
@@ -36,11 +41,17 @@
 
         .book-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 12px;
         }
 
-        @media (max-width: 400px) {
+        @media (max-width: 1023px) {
+            .book-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 639px) {
             .book-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -52,57 +63,76 @@
             overflow: hidden;
             box-shadow: 0 1px 4px rgba(0,0,0,0.1);
             display: none;
+            padding: 12px;
         }
 
         .book-card.loaded {
-            display: block;
-        }
-
-        .book-card img {
-            width: 100%;
-            aspect-ratio: 100 / 142;
-            object-fit: cover;
-            display: block;
-            border-bottom: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
 
         .book-title {
-            font-size: 0.75rem;
-            padding: 6px 8px;
-            line-height: 1.4;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            font-weight: bold;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
+        }
+
+        .book-author {
+            font-size: 0.75rem;
+            color: #555;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .book-isbn {
+            font-size: 0.7rem;
+            color: #999;
+            margin-top: auto;
+            padding-top: 4px;
+            border-top: 1px solid #eee;
         }
 
     </style>
 </head>
 <body>
 
-    <h1>読んでいる本</h1>
-    <p id="sincelastupdate"></p>
+    <div class="container">
+        <h1>読んでいる本</h1>
+        <p id="sincelastupdate"></p>
 
-    <div class="book-grid" id="book-grid"></div>
+        <div class="book-grid" id="book-grid"></div>
+    </div>
 
     <script>
-        var NO_IMAGE = "no_image.jpg";
-
-        function createCard(index) {
+        function createCard(index, isbn) {
             var card = $('<div class="book-card" id="card' + index + '"></div>');
-            card.append('<img id="img' + index + '" src="" alt="">');
             card.append('<p class="book-title" id="title' + index + '"></p>');
+            card.append('<p class="book-author" id="author' + index + '"></p>');
+            card.append('<p class="book-isbn">ISBN: ' + isbn + '</p>');
             $("#book-grid").append(card);
         }
 
         function loadBook(isbn, index) {
             if (!isbn) return;
             $.getJSON("https://api.openbd.jp/v1/get?isbn=" + isbn, function(data) {
-                if (!data || data[0] == null) return;
-                var cover = data[0].summary.cover || NO_IMAGE;
-                var title = data[0].summary.title || "（タイトル不明）";
-                $("#img" + index).attr("src", cover).attr("alt", title);
+                var title = "（タイトル不明）";
+                var author = "";
+                if (data && data[0] != null) {
+                    title = data[0].summary.title || title;
+                    author = data[0].summary.author || "";
+                }
                 $("#title" + index).text(title);
+                $("#author" + index).text(author);
+                $("#card" + index).addClass("loaded");
+            }).fail(function() {
+                $("#title" + index).text("（タイトル不明）");
                 $("#card" + index).addClass("loaded");
             });
         }
@@ -119,7 +149,7 @@
                 for (var i = 1; i <= 10; i++) {
                     var isbn = d["isbn_" + i];
                     if (isbn) {
-                        createCard(i);
+                        createCard(i, isbn);
                         loadBook(isbn, i);
                     }
                 }
